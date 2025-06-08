@@ -15,6 +15,7 @@ const Board = () => {
     const [isXTurn, setIsXTurn] = useState(true);
     const [winner, setWinner] = useState<string | null>(null);
     const [winningLine, setWinningLine] = useState<number[]>([]);
+    const [opponentJoined, setOpponentJoined] = useState(false);
 
     const createRoom = () => {
         console.log('Emitting createRoom');
@@ -23,6 +24,7 @@ const Board = () => {
             setRoomId(id);
             setJoined(true);
             setPlayer('X');
+            setOpponentJoined(false);
         });
     };
 
@@ -38,14 +40,29 @@ const Board = () => {
                 setRoomId(id);
                 setPlayer('O');
                 setJoined(true);
+                setOpponentJoined(true);
+                socket.emit('notifyOpponentJoined', id);
             } else {
                 alert('Failed To Join the Room');
             }
         });
     };
 
+    useEffect(() => {
+        const handleOpponentJoin = () => {
+            setOpponentJoined(true);
+        };
+        socket.on('opponentJoined', handleOpponentJoin);
+        return () => {
+            socket.off('opponentJoined', handleOpponentJoin);
+        };
+    }, []);
+
     const isMyTurn = () => {
-        return (isXTurn && player === 'X') || (!isXTurn && player === 'O');
+        return (
+            opponentJoined &&
+            ((isXTurn && player === 'X') || (!isXTurn && player === 'O'))
+        );
     };
 
     const checkWinner = (board: (string | null)[]) => {
@@ -103,7 +120,6 @@ const Board = () => {
         };
 
         socket.on('opponentMove', handleOpponentMove);
-
         return () => {
             socket.off('opponentMove', handleOpponentMove);
         };
@@ -118,7 +134,6 @@ const Board = () => {
         };
 
         socket.on('rematch', handleRematch);
-
         return () => {
             socket.off('rematch', handleRematch);
         };
@@ -140,15 +155,23 @@ const Board = () => {
         <div>
             {joined ? (
                 <>
-                    <div className='flex justify-center items-center space-x-2 mb-6'>
-                        <span className='text-lg bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg'>
-                            Room: {roomId}
-                        </span>
-                        <FaCopy
-                            onClick={copyPasteRoomId}
-                            className='cursor-pointer text-xl text-yellow-300 hover:text-yellow-900'
-                        />
+                    <div className='flex flex-col items-center mb-6'>
+                        <div className='flex space-x-2'>
+                            <span className='text-lg bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg'>
+                                Room: {roomId}
+                            </span>
+                            <FaCopy
+                                onClick={copyPasteRoomId}
+                                className='cursor-pointer text-xl text-yellow-300 hover:text-yellow-900'
+                            />
+                        </div>
+                        {!opponentJoined && (
+                            <p className='mt-2 text-blue-200 text-lg'>
+                                Waiting for opponent to join...
+                            </p>
+                        )}
                     </div>
+
                     <div className='flex justify-center items-center'>
                         <div className='grid grid-cols-3 gap-4'>
                             {board.map((cell, idx) => (
@@ -175,6 +198,7 @@ const Board = () => {
                             ))}
                         </div>
                     </div>
+
                     <div className='flex justify-center items-center'>
                         {winner && winner !== 'Draw' && (
                             <p className='mt-2 text-green-600 text-lg'>
@@ -187,6 +211,7 @@ const Board = () => {
                             </p>
                         )}
                     </div>
+
                     <div className='flex justify-center items-center'>
                         {(winner || board.every((cell) => cell)) && (
                             <button
