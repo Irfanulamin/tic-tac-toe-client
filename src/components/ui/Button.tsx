@@ -11,6 +11,8 @@ const Button: React.FC<ButtonProps> = ({
     variant = 'primary',
     children,
     className,
+    onClick,
+    ...rest
 }) => {
     const baseStyles =
         'text-base p-1 rounded-lg font-bold text-black border-2 border-b-4 active:border-b-2 hover:';
@@ -21,7 +23,11 @@ const Button: React.FC<ButtonProps> = ({
     };
 
     return (
-        <button className={cn(baseStyles, variants[variant], className)}>
+        <button
+            className={cn(baseStyles, variants[variant], className)}
+            onClick={onClick}
+            {...rest}
+        >
             {children}
         </button>
     );
