@@ -175,29 +175,35 @@ const Board = () => {
                             ))}
                         </div>
                     </div>
-                    {winner && winner !== 'Draw' && (
-                        <p className='mt-2 text-green-600 text-lg'>
-                            Winner: {winner}
-                        </p>
-                    )}
-                    {winner === 'Draw' && (
-                        <p className='mt-2 text-gray-600 text-lg'>
-                            It&apos;s a draw!
-                        </p>
-                    )}
-                    {(winner || board.every((cell) => cell)) && (
-                        <button
-                            onClick={handleRematch}
-                            className='mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded'
-                        >
-                            Rematch
-                        </button>
-                    )}
-                    {!isMyTurn() && !winner && !board.every((cell) => cell) && (
-                        <p className='mt-2 text-gray-600 text-center'>
-                            Waiting for opponent&apos;s move...
-                        </p>
-                    )}
+                    <div className='flex justify-center items-center'>
+                        {winner && winner !== 'Draw' && (
+                            <p className='mt-2 text-green-600 text-lg'>
+                                Winner: {winner}
+                            </p>
+                        )}
+                        {winner === 'Draw' && (
+                            <p className='mt-2 text-gray-600 text-lg'>
+                                It&apos;s a draw!
+                            </p>
+                        )}
+                    </div>
+                    <div className='flex justify-center items-center'>
+                        {(winner || board.every((cell) => cell)) && (
+                            <button
+                                onClick={handleRematch}
+                                className='mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded'
+                            >
+                                Rematch
+                            </button>
+                        )}
+                        {!isMyTurn() &&
+                            !winner &&
+                            !board.every((cell) => cell) && (
+                                <p className='mt-2 text-gray-600 text-center'>
+                                    Waiting for opponent&apos;s move...
+                                </p>
+                            )}
+                    </div>
                 </>
             ) : (
                 <Menu createRoom={createRoom} joinRoom={joinRoom} />
