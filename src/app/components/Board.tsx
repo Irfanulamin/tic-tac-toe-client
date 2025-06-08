@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import Menu from './Menu';
 import { FaCopy } from 'react-icons/fa';
 
-const socket = io('http://localhost:8000/');
+const socket = io('https://tic-tac-toe-server-o2xo.onrender.com/');
 const initialBoard: (string | null)[] = Array(9).fill(null);
 
 const Board = () => {
@@ -15,7 +15,6 @@ const Board = () => {
     const [isXTurn, setIsXTurn] = useState(true);
     const [winner, setWinner] = useState<string | null>(null);
     const [winningLine, setWinningLine] = useState<number[]>([]);
-    const [opponentJoined, setOpponentJoined] = useState(false);
 
     const createRoom = () => {
         console.log('Emitting createRoom');
@@ -24,7 +23,6 @@ const Board = () => {
             setRoomId(id);
             setJoined(true);
             setPlayer('X');
-            setOpponentJoined(false);
         });
     };
 
@@ -40,7 +38,6 @@ const Board = () => {
                 setRoomId(id);
                 setPlayer('O');
                 setJoined(true);
-                setOpponentJoined(true);
                 socket.emit('notifyOpponentJoined', id);
             } else {
                 alert('Failed To Join the Room');
@@ -48,21 +45,8 @@ const Board = () => {
         });
     };
 
-    useEffect(() => {
-        const handleOpponentJoin = () => {
-            setOpponentJoined(true);
-        };
-        socket.on('opponentJoined', handleOpponentJoin);
-        return () => {
-            socket.off('opponentJoined', handleOpponentJoin);
-        };
-    }, []);
-
     const isMyTurn = () => {
-        return (
-            opponentJoined &&
-            ((isXTurn && player === 'X') || (!isXTurn && player === 'O'))
-        );
+        return (isXTurn && player === 'X') || (!isXTurn && player === 'O');
     };
 
     const checkWinner = (board: (string | null)[]) => {
@@ -156,20 +140,15 @@ const Board = () => {
             {joined ? (
                 <>
                     <div className='flex flex-col items-center mb-6'>
-                        <div className='flex space-x-2'>
-                            <span className='text-lg bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg'>
+                        <div className='flex justfiy-center items-center space-x-2'>
+                            <div className='text-lg bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg'>
                                 Room: {roomId}
-                            </span>
+                            </div>
                             <FaCopy
                                 onClick={copyPasteRoomId}
                                 className='cursor-pointer text-xl text-yellow-300 hover:text-yellow-900'
                             />
                         </div>
-                        {!opponentJoined && (
-                            <p className='mt-2 text-blue-200 text-lg'>
-                                Waiting for opponent to join...
-                            </p>
-                        )}
                     </div>
 
                     <div className='flex justify-center items-center'>
